@@ -1,11 +1,11 @@
 using System;
 using UnityEngine;
 
-[System.Serializable] // Ensure this is spelled correctly
-public class Room
+[System.Serializable]
+public class Room : MonoBehaviour
 {
     private float x, y;
-    private string type, floors;
+    [SerializeField] private string type, floors;
 
     public Room(float x, float y, string type)
     {
