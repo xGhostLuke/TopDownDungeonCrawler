@@ -9,9 +9,9 @@ public class MapGen : MonoBehaviour
     [SerializeField] private int[,] roomArray = new int[5, 5];
     [SerializeField] private List<GameObject> rooms = new List<GameObject>();
     [SerializeField] private HashSet<Vector3> instantiatedFloors = new HashSet<Vector3>(); 
-    private int rows, columns;
+    private int rows, columns, startX, startY, endX, endY;
 
-    private bool hasEnd, hastStart;
+    private bool hasEnd, hastStart, needToGenerateNewMap;
 
     void Start()
     {
@@ -25,11 +25,13 @@ public class MapGen : MonoBehaviour
     }
 
     public void GenerateMap(){
+        needToGenerateNewMap = false;
         ClearMap();
         GenerateRooms();
         GenerateFloors();
         correctFloors();
-        checkForDistantRooms();
+        checkForOneWayRooms();
+
         findStartEnd();
     }
 
@@ -63,43 +65,43 @@ public class MapGen : MonoBehaviour
         foreach (GameObject _room in rooms)
         {
             Room room = _room.GetComponent<Room>();
-            if (CheckNeighbor(room, "Right")){
+            if (CheckNeighbor(room, "R")){
                 Vector3 floorPosition = new Vector3(room.GetX() + 0.5f, room.GetY(), 0);
                 if (!instantiatedFloors.Contains(floorPosition)) 
                 {
                     Instantiate(floorPrefab, floorPosition, transform.rotation * Quaternion.Euler(0f, 0f, 90f), map.transform).name = "Floor";
                     instantiatedFloors.Add(floorPosition); 
-                    room.SetFloors(room.GetFloors() + "Right");
+                    room.SetFloors(room.GetFloors() + "R");
                 }
             }
-            if (CheckNeighbor(room, "Left"))
+            if (CheckNeighbor(room, "L"))
             {
                 Vector3 floorPosition = new Vector3(room.GetX() - 0.5f, room.GetY(), 0);
                 if (!instantiatedFloors.Contains(floorPosition))
                 {
                     Instantiate(floorPrefab, floorPosition, transform.rotation * Quaternion.Euler(0f, 0f, 90f), map.transform).name = "Floor";
                     instantiatedFloors.Add(floorPosition);
-                    room.SetFloors(room.GetFloors() + "Left");
+                    room.SetFloors(room.GetFloors() + "L");
                 }
             }
-            if (CheckNeighbor(room, "Top"))
+            if (CheckNeighbor(room, "T"))
             {
                 Vector3 floorPosition = new Vector3(room.GetX(), room.GetY() + 0.5f, 0);
                 if (!instantiatedFloors.Contains(floorPosition))
                 {
                     Instantiate(floorPrefab, floorPosition, transform.rotation * Quaternion.Euler(0f, 0f, 0f), map.transform).name = "Floor";
                     instantiatedFloors.Add(floorPosition);
-                    room.SetFloors(room.GetFloors() + "Top");
+                    room.SetFloors(room.GetFloors() + "T");
                 }
             }
-            if (CheckNeighbor(room, "Down"))
+            if (CheckNeighbor(room, "D"))
             {
                 Vector3 floorPosition = new Vector3(room.GetX(), room.GetY() - 0.5f, 0);
                 if (!instantiatedFloors.Contains(floorPosition))
                 {
                     Instantiate(floorPrefab, floorPosition, transform.rotation * Quaternion.Euler(0f, 0f, 0f), map.transform).name = "Floor";
                     instantiatedFloors.Add(floorPosition);
-                    room.SetFloors(room.GetFloors() + "Down");
+                    room.SetFloors(room.GetFloors() + "D");
                 }
             }
         }
@@ -112,28 +114,28 @@ public class MapGen : MonoBehaviour
 
         switch (direction)
         {
-            case "Right":
+            case "R":
                 if (x + 1 < columns && roomArray[x + 1, y] == 1)
                 {
                     return true;
                 }
                 break;
 
-            case "Left":
+            case "L":
                 if (x - 1 >= 0 && roomArray[x - 1, y] == 1)
                 {
                     return true;
                 }
                 break;
 
-            case "Top":
+            case "T":
                 if (y + 1 < rows && roomArray[x, y + 1] == 1)
                 {
                     return true;
                 }
                 break;
 
-            case "Down":
+            case "D":
                 if (y - 1 >= 0 && roomArray[x, y - 1] == 1)
                 {
                     return true;
@@ -147,27 +149,27 @@ public class MapGen : MonoBehaviour
     private void correctFloors(){
         foreach (GameObject _room in rooms){
             Room room = _room.GetComponent<Room>();
-            if (CheckNeighbor(room, "Top") && !room.GetFloors().Contains("Top")){
-                room.SetFloors(room.GetFloors() + "Top");
+            if (CheckNeighbor(room, "T") && !room.GetFloors().Contains("T")){
+                room.SetFloors(room.GetFloors() + "T");
             }
-            if (CheckNeighbor(room, "Down") && !room.GetFloors().Contains("Down")){
-                room.SetFloors(room.GetFloors() + "Down");
+            if (CheckNeighbor(room, "D") && !room.GetFloors().Contains("D")){
+                room.SetFloors(room.GetFloors() + "D");
             }
-            if (CheckNeighbor(room, "Left") && !room.GetFloors().Contains("Left")){
-                room.SetFloors(room.GetFloors() + "Left");
+            if (CheckNeighbor(room, "L") && !room.GetFloors().Contains("L")){
+                room.SetFloors(room.GetFloors() + "L");
             }
-            if (CheckNeighbor(room, "Right") && !room.GetFloors().Contains("Right")){
-                room.SetFloors(room.GetFloors() + "Right");
+            if (CheckNeighbor(room, "R") && !room.GetFloors().Contains("R")){
+                room.SetFloors(room.GetFloors() + "R");
             }
 
         }
     }
 
     private void findStartEnd(){
-        int startX = UnityEngine.Random.Range(0, rows);
-        int startY = UnityEngine.Random.Range(0, columns);
-        int endX = UnityEngine.Random.Range(0, rows);
-        int endY = UnityEngine.Random.Range(0, columns);
+        startX = UnityEngine.Random.Range(0, rows);
+        startY = UnityEngine.Random.Range(0, columns);
+        endX = UnityEngine.Random.Range(0, rows);
+        endY = UnityEngine.Random.Range(0, columns);
         foreach (GameObject _room in rooms){
             Room room = _room.GetComponent<Room>();
             if(startX == room.GetX() && startY == room.GetY() && !hastStart){
@@ -190,20 +192,17 @@ public class MapGen : MonoBehaviour
         }
     }
 
-    private void checkForDistantRooms(){
-        bool needToGenerateNewMap = false;
+    private void checkForOneWayRooms(){
+        int oneWayRooms = 0;
         foreach (GameObject _room in rooms){
-            Room room = _room.GetComponent<Room>(); 
-            if (room.GetFloors().Equals("")){
-                needToGenerateNewMap = true;
-                Debug.Log("Found distant Room");
-                
+            Room room = _room.GetComponent<Room>();
+            if(room.GetFloors().Length <= 1){
+                oneWayRooms++;
+            }
+            if (oneWayRooms > 2){
+            GenerateMap();
             }
         }
-        if (needToGenerateNewMap){
-            GenerateMap();
-        }
-        
     }
 
     private void ClearMap()
