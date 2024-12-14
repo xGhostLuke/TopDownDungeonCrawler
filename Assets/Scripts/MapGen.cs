@@ -11,6 +11,8 @@ public class MapGen : MonoBehaviour
     [SerializeField] private HashSet<Vector3> instantiatedFloors = new HashSet<Vector3>(); 
     private int rows, columns, startX, startY, endX, endY;
 
+    [SerializeField] private int offset;
+
     private bool hasEnd, hastStart, needToGenerateNewMap;
 
     void Start()
@@ -49,10 +51,10 @@ public class MapGen : MonoBehaviour
                 {
                     roomArray[x, y] = 1;
 
-                    clone = Instantiate(roomPrefab, new Vector3(x, y, 0), Quaternion.identity, map.transform);
+                    clone = Instantiate(roomPrefab, new Vector3(x-offset, y-offset, 0), Quaternion.identity, map.transform);
                     clone.name = $"Room({x}|{y})";
-                    clone.GetComponent<Room>().SetX(x);
-                    clone.GetComponent<Room>().SetY(y);
+                    clone.GetComponent<Room>().SetX(x-offset);
+                    clone.GetComponent<Room>().SetY(y-offset);
                     clone.GetComponent<Room>().SetType("Default");
                     rooms.Add(clone);
                 }
@@ -109,8 +111,8 @@ public class MapGen : MonoBehaviour
 
     private bool CheckNeighbor(Room _room, string direction)
     {
-        int x = (int)_room.GetX();
-        int y = (int)_room.GetY();
+        int x = (int)_room.GetX() + offset;
+        int y = (int)_room.GetY() + offset;
 
         switch (direction)
         {
@@ -170,6 +172,10 @@ public class MapGen : MonoBehaviour
         startY = UnityEngine.Random.Range(0, columns);
         endX = UnityEngine.Random.Range(0, rows);
         endY = UnityEngine.Random.Range(0, columns);
+        while(startX == endX && startY == endY){
+            endX = UnityEngine.Random.Range(0, rows);
+            endY = UnityEngine.Random.Range(0, columns);
+        }  
         foreach (GameObject _room in rooms){
             Room room = _room.GetComponent<Room>();
             if(startX == room.GetX() && startY == room.GetY() && !hastStart){
@@ -199,10 +205,10 @@ public class MapGen : MonoBehaviour
             if(room.GetFloors().Length <= 1){
                 oneWayRooms++;
             }
-            if (oneWayRooms > 2){
+        }
+        if (oneWayRooms > 2){
             GenerateMap();
             }
-        }
     }
 
     private void ClearMap()
