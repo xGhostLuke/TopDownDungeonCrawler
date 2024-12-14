@@ -9,11 +9,8 @@ public class MapGen : MonoBehaviour
     [SerializeField] private int[,] roomArray;
     [SerializeField] private List<GameObject> rooms = new List<GameObject>();
     [SerializeField] private HashSet<Vector3> instantiatedFloors = new HashSet<Vector3>(); 
-    [SerializeField] private int rows, columns, startX, startY, endX, endY;
-
-    [SerializeField] private int offset;
-
-    private bool hasEnd, hastStart, needToGenerateNewMap;
+    [SerializeField] private int rows, columns, startX, startY, endX, endY, offset;
+    private bool hasEnd, hastStart, needToGenerateNewMap, finishedGenerating;
 
     void Start()
     {
@@ -21,7 +18,7 @@ public class MapGen : MonoBehaviour
         map = GameObject.FindGameObjectWithTag("Map");
         hasEnd = false;
         hastStart = false;
-
+        finishedGenerating = false;
         GenerateMap();
     }
 
@@ -33,7 +30,7 @@ public class MapGen : MonoBehaviour
         correctFloors();
         findStartEnd();
         checkMap();
-
+        finishedGenerating = true;
     }
 
     private void GenerateRooms()
@@ -246,5 +243,20 @@ public class MapGen : MonoBehaviour
             }
         }
         return null;
+    }
+
+    public Room getRoom(string str){
+        foreach (GameObject _room in rooms){
+            Room room = _room.GetComponent<Room>();
+            if (room.GetType().Equals(str)){
+                return room;
+            }
+        }
+        Debug.Log("No Room found of type: " + str);
+        return null;
+    }
+
+    public bool getStatus(){
+        return finishedGenerating;
     }
 }
