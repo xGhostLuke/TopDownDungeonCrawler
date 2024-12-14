@@ -294,6 +294,13 @@ MonoBehaviour:
   floorPrefab: {fileID: 5520337788953472621, guid: 294ab14f2485ccd4397d3ea62494dfda, type: 3}
   map: {fileID: 0}
   rooms: []
+  rows: 6
+  columns: 6
+  startX: 0
+  startY: 0
+  endX: 0
+  endY: 0
+  offset: 2
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

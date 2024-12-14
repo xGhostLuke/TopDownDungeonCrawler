@@ -6,10 +6,10 @@ using UnityEngine;
 public class MapGen : MonoBehaviour
 {
     [SerializeField] private GameObject roomPrefab, floorPrefab, map;
-    [SerializeField] private int[,] roomArray = new int[5, 5];
+    [SerializeField] private int[,] roomArray;
     [SerializeField] private List<GameObject> rooms = new List<GameObject>();
     [SerializeField] private HashSet<Vector3> instantiatedFloors = new HashSet<Vector3>(); 
-    private int rows, columns, startX, startY, endX, endY;
+    [SerializeField] private int rows, columns, startX, startY, endX, endY;
 
     [SerializeField] private int offset;
 
@@ -17,8 +17,7 @@ public class MapGen : MonoBehaviour
 
     void Start()
     {
-        rows = roomArray.GetLength(0);
-        columns = roomArray.GetLength(1);
+        roomArray = new int[rows, columns];
         map = GameObject.FindGameObjectWithTag("Map");
         hasEnd = false;
         hastStart = false;
@@ -32,9 +31,9 @@ public class MapGen : MonoBehaviour
         GenerateRooms();
         GenerateFloors();
         correctFloors();
-        checkForOneWayRooms();
-
         findStartEnd();
+        checkMap();
+
     }
 
     private void GenerateRooms()
@@ -168,13 +167,13 @@ public class MapGen : MonoBehaviour
     }
 
     private void findStartEnd(){
-        startX = UnityEngine.Random.Range(0, rows);
-        startY = UnityEngine.Random.Range(0, columns);
-        endX = UnityEngine.Random.Range(0, rows);
-        endY = UnityEngine.Random.Range(0, columns);
+        startX = UnityEngine.Random.Range(0-offset, rows);
+        startY = UnityEngine.Random.Range(0-offset, columns);
+        endX = UnityEngine.Random.Range(0-offset, rows);
+        endY = UnityEngine.Random.Range(0-offset, columns);
         while(startX == endX && startY == endY){
-            endX = UnityEngine.Random.Range(0, rows);
-            endY = UnityEngine.Random.Range(0, columns);
+            endX = UnityEngine.Random.Range(0-offset, rows);
+            endY = UnityEngine.Random.Range(0-offset, columns);
         }  
         foreach (GameObject _room in rooms){
             Room room = _room.GetComponent<Room>();
@@ -183,7 +182,7 @@ public class MapGen : MonoBehaviour
                 _room.GetComponent<SpriteRenderer>().color = Color.green;
                 hastStart = true;
 
-                Debug.Log("start at: " + startX + "" + startY + "");
+                Debug.Log("start at: " + startX + " " + startY + "");
             }
             if(endX == room.GetX() && endY == room.GetY() && !hasEnd){
                 room.SetType("end");
@@ -198,17 +197,24 @@ public class MapGen : MonoBehaviour
         }
     }
 
-    private void checkForOneWayRooms(){
+    private void checkMap(){
         int oneWayRooms = 0;
+        int startEndRooms = 0;
         foreach (GameObject _room in rooms){
             Room room = _room.GetComponent<Room>();
             if(room.GetFloors().Length <= 1){
                 oneWayRooms++;
             }
-        }
-        if (oneWayRooms > 2){
-            GenerateMap();
+            if (room.GetFloors().Equals("")){
+                needToGenerateNewMap = true;
             }
+            if (room.GetType().Equals("start") || room.GetType().Equals("end")){
+                startEndRooms++;
+            }
+        }
+        if (oneWayRooms > 2 || needToGenerateNewMap || startEndRooms != 2){
+            GenerateMap();
+        }
     }
 
     private void ClearMap()
@@ -230,6 +236,15 @@ public class MapGen : MonoBehaviour
         }
         instantiatedFloors.Clear();
         rooms.Clear();  
-        
+    }
+
+    public Room getRoom(int x, int y){
+        foreach (GameObject _room in rooms){
+            Room room = _room.GetComponent<Room>();
+            if (x == room.GetX() && y == room.GetY()){
+                return room;
+            }
+        }
+        return null;
     }
 }
